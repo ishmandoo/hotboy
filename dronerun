@@ -1,0 +1,3 @@
+#!/bin/bash
+# passes all arguments to python and runs in background
+python "$@" &
