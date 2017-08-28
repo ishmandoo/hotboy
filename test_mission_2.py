@@ -1,13 +1,14 @@
-from dronekit import connect, VehicleMode
+from dronekit import connect, VehicleMode, LocationGlobalRelative
 import time
+import picamera
 
 aTargetAltitude = 3
 
 #vehicle = connect("/dev/ttyACM0")
 vehicle = connect("tcp:127.0.0.1:5760")
+camera = picamera.PiCamera()
 
 time.sleep(15)
-
 
 vehicle.mode = VehicleMode("GUIDED")
 
@@ -24,6 +25,9 @@ vehicle.armed = True
 time.sleep(5)
 print vehicle.armed
 
+homeLat = vehicle.location.global_frame.lat
+homeLon = vehicle.location.global_frame.lon
+
 if vehicle.armed == True:
     print "Taking off!"
     vehicle.simple_takeoff(aTargetAltitude) # Take off to target altitude
@@ -37,6 +41,15 @@ if vehicle.armed == True:
             time.sleep(3)
             break
         time.sleep(1)
+
+    for h in range(4,20,2):
+        pos = LocationGlobalRelative(homeLat, homeLon, float(h))
+        vehicle.simple_goto(pos)
+        time.sleep(5)
+        print " Altitude: ", vehicle.location.global_relative_frame.alt
+        for i in range(10):
+            camera.capture('img_' + str(h) + 'm_' + str(i) + '.jpg')
+            time.sleep(1)
 
     vehicle.mode = VehicleMode("RTL")
     print vehicle.mode
