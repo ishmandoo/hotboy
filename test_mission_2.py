@@ -4,13 +4,13 @@ import picamera
 
 aTargetAltitude = 3
 
-#vehicle = connect("/dev/ttyACM0")
-vehicle = connect("tcp:127.0.0.1:5760")
+vehicle = connect("/dev/ttyACM0")
+#vehicle = connect("tcp:127.0.0.1:5760")
 camera = picamera.PiCamera()
 
 time.sleep(15)
 
-vehicle.mode = VehicleMode("GUIDED")
+#vehicle.mode = VehicleMode("GUIDED")
 
 while not vehicle.mode == "GUIDED":
     print "waiting for guided mode"
@@ -19,7 +19,6 @@ while not vehicle.mode == "GUIDED":
 while vehicle.channels["6"] < 1500:
     print "waiting for GO switch"
     time.sleep(1)
-    break
 
 vehicle.armed = True
 time.sleep(5)
@@ -45,11 +44,11 @@ if vehicle.armed == True:
     for h in range(4,20,2):
         pos = LocationGlobalRelative(homeLat, homeLon, float(h))
         vehicle.simple_goto(pos)
-        time.sleep(5)
+        time.sleep(2)
         print " Altitude: ", vehicle.location.global_relative_frame.alt
         for i in range(10):
             camera.capture('img_' + str(h) + 'm_' + str(i) + '.jpg')
-            time.sleep(1)
+            time.sleep(0.2)
 
     vehicle.mode = VehicleMode("RTL")
     print vehicle.mode
