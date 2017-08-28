@@ -6,7 +6,9 @@ vehicle = connect("/dev/ttyACM0")
 
 camera = picamera.PiCamera()
 
-print time.time()
+t1 = time.time()
 camera.capture("test.jpg")
 print vehicle.attitude
-print time.time()
+t2 time.time()
+
+print t2-t1
