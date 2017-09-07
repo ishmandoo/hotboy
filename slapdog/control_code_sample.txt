@@ -1,0 +1,44 @@
+# Use with PID class from:
+# https://github.com/ivmech/ivPID
+
+import PID
+import picamera
+import dronekit
+
+vehicle = dronekit.connect("/dev/ttyACM0") # and other prerequisites
+
+
+#PIDs for x and y image axes with inputs Kp, Ki, Kd
+xpid = PID.PID(0.2, 0.1, 0.1) # Play with these gain parameters
+ypid = PID.PID(0.2, 0.1, 0.1)
+
+while True:
+	
+	# Insert image capture code here and return xavg and yavg (as in pitrackobject), which are the process variables
+
+	# I *think* PID class defaults to zero setpoint
+	xerr = (Floor of the camera resolution width/2) - xavg
+	yerr = (Floor of the camera resolution height/2) - yavg
+	
+	xpid.update(xerr)
+	ypid.update(yerr)
+	
+	# Override any ongoing movement commands here (if not automatically overridden by the following)
+	
+	
+	"""
+	Here, command the drone to move. How much is TBD by xpid.output, ypid.output, 
+	and altitude (xpid and ypid were blind to this).
+	
+	Easiest approach might be designating movement y meters forward and x meters to the right 
+	in the reference frame MAV_FRAME_BODY_OFFSET_NED (could also tweak x and y velocities):
+	
+	OR:
+	Set target lat and lon based on ypid.output, xpid.output, and altitude
+	"""
+
+
+"""
+Instead of x,y adjustments, we could instead use r and theta (relative to center and "up" in the image) 
+and adjust forward movement and yaw. Doubt this would be better though.
+"""
