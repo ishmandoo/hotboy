@@ -12,6 +12,8 @@ camera.resolution = (720, 480)
 rawCapture = PiRGBArray(camera, size=(720, 480))
 #rawCapture = PiRGBArray(camera)
 
+def draw_circle(frame,x,y):
+	cv2.circle(frame,(x,y),20,(255,0,0),2)
 # allow the camera to warmup
 time.sleep(0.1)
 
