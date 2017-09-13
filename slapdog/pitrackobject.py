@@ -11,7 +11,7 @@ camera.resolution = (720, 480)
 #camera.framerate = 32
 rawCapture = PiRGBArray(camera, size=(720, 480))
 #rawCapture = PiRGBArray(camera)
-
+picnum = 0
 def draw_circle(frame,x,y):
 	cv2.circle(frame,(x,y),20,(255,0,0),2)
 # allow the camera to warmup
@@ -51,6 +51,8 @@ for piframe in camera.capture_continuous(rawCapture, format="bgr", use_video_por
 
 
 	cv2.imwrite("current_img.jpg",frame)
+	cv2.imwrite("pics/img" + str(picnum) + ".jpg",frame)
+	picnum += 1
 	# Bitwise-AND mask and original image
 	res = cv2.bitwise_and(frame,frame, mask= mask)
 
