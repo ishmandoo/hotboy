@@ -45,8 +45,10 @@ for piframe in camera.capture_continuous(rawCapture, format="bgr", use_video_por
 		xavg = np.sum( mask * xv) / N
 		yavg = np.sum( mask * yv) / N
 		print "x:" + str(xavg) + " y: " + str(yavg)
-		#draw_circle(frame, int(xavg), int(yavg))
+		draw_circle(frame, int(xavg), int(yavg))
 
+
+	cv2.imwrite("current_img.jpg",frame)
 	# Bitwise-AND mask and original image
 	res = cv2.bitwise_and(frame,frame, mask= mask)
 
