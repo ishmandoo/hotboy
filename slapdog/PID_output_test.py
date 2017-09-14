@@ -53,18 +53,20 @@ for piframe in camera.capture_continuous(rawCapture, format="bgr", use_video_por
 		#print "x:" + str(xavg) + " y: " + str(yavg)
 		draw_circle(frame, int(xavg), int(yavg))
 
-        # I *think* PID class defaults to zero setpoint
-        # Might need to swap 0 and 1 indices below; yerr might be opposite sign...
-        xerr = xavg - np.floor(camera.resolution[0]/2)
-        yerr = np.floor(camera.resolution[1]/2) - yavg
+		# I *think* PID class defaults to zero setpoint
+		# Might need to swap 0 and 1 indices below; yerr might be opposite sign...
+		xerr = xavg - np.floor(camera.resolution[0]/2)
+		yerr = np.floor(camera.resolution[1]/2) - yavg
 
-        xpid.update(xerr)
-        ypid.update(yerr)
+		xpid.update(xerr)
+		ypid.update(yerr)
 
-        # print xpid.output and ypid.output
-        print "x_err: " + str(xerr) + " | x_out: " + str(xpid.output) + " | y_err: " + str(yerr) + " | y_out: " + str(ypid.output)
+		# print xpid.output and ypid.output
+		print "x_err: " + str(xerr) + " | x_out: " + str(xpid.output) + " | y_err: " + str(yerr) + " | y_out: " + str(ypid.output)
 
-    """
+		time.sleep(2)
+
+	"""
 	cv2.imwrite("current_img.jpg",frame)
 	cv2.imwrite("pics/img" + str(picnum) + ".jpg",frame)
 	picnum += 1
@@ -81,4 +83,4 @@ for piframe in camera.capture_continuous(rawCapture, format="bgr", use_video_por
 		# if the `q` key was pressed, break from the loop
 	if key == ord("q"):
 		break
-    """
+	"""
