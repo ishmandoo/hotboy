@@ -2,7 +2,7 @@
 <div style="display:inline;">
 	<label id='radLabel'>2</label>
 	<input type='range' min='1' max='30' value='2' id='rad'>
-	<label id="colorLabel" style='float:right;'></label>
+	<label id="colorLabel"></label>
 	<br/>
 	<canvas id='mycanvas'>
 	</canvas>
@@ -10,9 +10,14 @@
 
 <script>
 	//Created canvas, load photo
-	var src="../photos/run1/img_10m_0.jpg"
+	var src="/img"
 	var canvas=document.getElementById('mycanvas')
 	var context=canvas.getContext("2d")
+
+
+	var r_avg = 0
+	var g_avg = 0 
+	var b_avg = 0
 
 	// Store image as img
 	var img = new Image()
@@ -37,6 +42,15 @@
 	img.onload = function(){
 		context.drawImage(img, 0, 0)
 	}
+
+	canvas.addEventListener('click', function(e) {
+		console.log("pop")
+		colorLabel.innerHTML = ''+avg_r+','+avg_g+','+avg_b
+
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET',  "update/" +avg_r+','+avg_g+','+avg_b, true);
+		xhr.send();
+	}, false)
 
 	//On mouse movements, clear canvas, redraw image, collect pixels, average, draw selectbox, color pane
 	canvas.onmousemove = function(e){
@@ -66,7 +80,10 @@
 			}
 		}
 
-		colorLabel.innerHTML = 'rgb('+Math.floor(r/n)+','+Math.floor(g/n)+','+Math.floor(b/n)+')'
+		avg_r = Math.floor(r/n)
+		avg_g = Math.floor(g/n)
+		avg_b = Math.floor(b/n)
+
 
 		//Set color to black to draw color pane bg. Draw pane bg.
 		context.fillStyle='rgb(0,0,0)'
