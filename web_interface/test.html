@@ -1,2 +1,86 @@
 <html>
+<div style="display:inline;">
+	<label id='radLabel'>2</label>
+	<input type='range' min='1' max='30' value='2' id='rad'>
+	<label id="colorLabel" style='float:right;'></label>
+	<br/>
+	<canvas id='mycanvas'>
+	</canvas>
+</div>
+
+<script>
+	//Created canvas, load photo
+	var src="../photos/run1/img_10m_0.jpg"
+	var canvas=document.getElementById('mycanvas')
+	var context=canvas.getContext("2d")
+
+	// Store image as img
+	var img = new Image()
+	img.src = src
+
+	canvas.width = img.width
+	canvas.height = img.height
+
+	//Slider to control box size to average pixel colors
+	var rad = 2
+	var slider = document.getElementById('rad')
+	var sliderLabel = document.getElementById('radLabel')
+	var colorLabel = document.getElementById('colorLabel')
+	slider.oninput = function(){
+		rad = this.value
+		sliderLabel.innerHTML = this.value
+	}
+
+	//Onload, draw image to canvas
+	img.onload = function(){
+		context.drawImage(img, 0, 0)
+	}
+
+	//On mouse movements, clear canvas, redraw image, collect pixels, average, draw selectbox, color pane
+	canvas.onmousemove = function(e){
+
+		//Clear image so previous select box clears
+		context.clearRect(0, 0, 1000, 1000)
+		context.drawImage(img, 0, 0)
+
+		//Get x,y mouse coords
+		var x = e.offsetX
+		var y = e.offsetY
+
+		//Variables for calculating average rgb, total n pixels averaged
+		var r = 0
+		var g = 0
+		var b = 0
+		var n = 0
+
+		//Loop over box width rad/2 around current mouse pos. Sum up all rgb values, calc total pixels n
+		for (dx = -rad; dx <= rad; dx++) {
+			for (dy = -rad; dy <= rad; dy++) {
+				var rgb = context.getImageData(x+dx,y+dy,1,1).data
+				r += rgb[0]
+				g += rgb[1]
+				b += rgb[2]
+				n++
+			}
+		}
+
+		colorLabel.innerHTML = 'rgb('+Math.floor(r/n)+','+Math.floor(g/n)+','+Math.floor(b/n)+')'
+
+		//Set color to black to draw color pane bg. Draw pane bg.
+		context.fillStyle='rgb(0,0,0)'
+		context.fillRect(0,0,22,22)
+
+		//Start path for selector box. Draw selector in red. Close path
+		context.beginPath()
+		
+		context.rect(x-rad,y-rad,2*rad+1,2*rad+1)
+		context.strokeStyle="red";
+		context.stroke()
+		context.closePath()
+
+		//Calculate avg rgb for selector box. Draw color pane filled box for color
+		context.fillStyle='rgb('+Math.floor(r/n)+','+Math.floor(g/n)+','+Math.floor(b/n)+')'
+		context.fillRect(1,1,20,20)
+	}
+</script>
 </html>
