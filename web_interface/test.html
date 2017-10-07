@@ -24,12 +24,14 @@
 	//Slider to control box size to average pixel colors
 	var rad = 2
 	var slider = document.getElementById('rad')
-	var sliderLabel = document.getElementById('radLabel')
-	var colorLabel = document.getElementById('colorLabel')
 	slider.oninput = function(){
 		rad = this.value
 		sliderLabel.innerHTML = this.value
 	}
+
+	//Labels for slider value and RGB output
+	var sliderLabel = document.getElementById('radLabel')
+	var colorLabel = document.getElementById('colorLabel')
 
 	//Onload, draw image to canvas
 	img.onload = function(){
@@ -76,6 +78,7 @@
 		context.rect(x-rad,y-rad,2*rad+1,2*rad+1)
 		context.strokeStyle="red";
 		context.stroke()
+		
 		context.closePath()
 
 		//Calculate avg rgb for selector box. Draw color pane filled box for color
