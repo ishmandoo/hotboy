@@ -37,7 +37,7 @@ for piframe in camera.capture_continuous(rawCapture, format="bgr", use_video_por
 
 
 	#currently set for orange frisbee
-	lower_color = np.array([25,0,180])
+	lower_color = np.array([25,100,180])
 	upper_color = np.array([65,255,255])
 	# Threshold the HSV image to get only desired colors
 	mask = cv2.inRange(hsv, lower_color, upper_color)
