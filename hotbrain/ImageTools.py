@@ -1,12 +1,11 @@
 import cv2
 import numpy as np
 
-cap = cv2.VideoCapture(0)
 
 def drawCircle(frame,x,y):
     cv2.circle(frame,(x,y),20,(255,0,0),2)
 
-def findTarget(img, show_img=False):
+def findTarget(frame, show_img=False):
     """Finds the frisbee target in an image
 
     Identifies the frisbee in the image and returns the pixel location as a tuple
@@ -18,7 +17,7 @@ def findTarget(img, show_img=False):
         Either a tuple with the x and y pixel location in the image or None, if no frisbee is found
 
     """
-    _, frame = cap.read()
+
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 

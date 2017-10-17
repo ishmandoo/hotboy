@@ -1,179 +1,120 @@
 from dronekit import connect, VehicleMode, LocationGlobalRelative
 import time
 import picamera
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+import numpy as np
+from threading import Thread
 
-def function(big_table, keys, other_silly_variable=None):
-    """Fetches rows from a Bigtable.
 
-        Retrieves rows pertaining to the given keys from the Table instance
-        represented by big_table.  Silly things may happen if
-        other_silly_variable is not None.
+class Hotboy():
 
-        Args:
-            big_table: An open Bigtable Table instance.
-            keys: A sequence of strings representing the key of each table row
-                to fetch.
-            other_silly_variable: Another optional variable, that has a much
-                longer name than the other args, and which does nothing.
+    def __init__(self,port="/dev/ttyACM0", camera=True, activate=False):
+        self.vehicle = connect(port, wait_ready=True)
+        self.homeLat = vehicle.location.global_frame.lat
+        self.homeLon = vehicle.location.global_frame.lon
+        self.activated = False
+        if activate:
+            self.activate()
+        if camera:
+            self.initCamera()
 
-        Returns:
-            A dict mapping keys to the corresponding table row data
-            fetched. Each row is represented as a tuple of strings. For
-            example:
+    def __del__(self):
+        self.vehicle.close()
+        self.stream.close()
+        self.rawCapture.close()
+        self.camera.close()
+        self.stopped = True
 
-            {'Serak': ('Rigel VII', 'Preparer'),
-             'Zim': ('Irk', 'Invader'),
-             'Lrrr': ('Omicron Persei 8', 'Emperor')}
+    def initCamera(self):
+        # based on https://github.com/jrosebr1/imutils/blob/master/imutils/video/pivideostream.py
+        self.camera = PiCamera()
+        self.camera.resolution = (720, 480)
+        #self.camera.framerate = framerate
+        self.rawCapture = PiRGBArray(camera, size=(720, 480))
+        self.stream = self.camera.capture_continuous(self.rawCapture,
+            format="bgr", use_video_port=True)
+        # start the thread to read frames from the video stream
+        self.frame = np.zeros((480,720,3), dtype=np.uint8)
+        self.stopped = False
+        t = Thread(target=self.cameraLoop, args=())
+        t.daemon = True
+        t.start()
 
-            If a key from the keys argument is missing from the dictionary,
-            then that row was not found in the table.
 
-        Raises:
-            IOError: An error occurred accessing the bigtable.Table object.
+    def cameraLoop(self):
+        # keep looping infinitely until the thread is stopped
+        for f in self.stream:
+            # grab the frame from the stream and clear the stream in
+            # preparation for the next frame
+            self.frame = f.array
+            self.rawCapture.truncate(0)
+
+            # if the thread indicator variable is set, stop the thread
+            # and resource camera resources
+            if self.stopped:
+                self.stream.close()
+                self.rawCapture.close()
+                self.camera.close()
+                return
+
+
+    def getFrame(self):
+        return self.frame
+
+    def activate(self, aTargetAltitude):
         """
-    pass
-
-class hotboy():
-    """Fetches rows from a Bigtable.
-
-        Retrieves rows pertaining to the given keys from the Table instance
-        represented by big_table.  Silly things may happen if
-        other_silly_variable is not None.
-
-        Args:
-            big_table: An open Bigtable Table instance.
-            keys: A sequence of strings representing the key of each table row
-                to fetch.
-            other_silly_variable: Another optional variable, that has a much
-                longer name than the other args, and which does nothing.
-
-        Returns:
-            A dict mapping keys to the corresponding table row data
-            fetched. Each row is represented as a tuple of strings. For
-            example:
-
-            {'Serak': ('Rigel VII', 'Preparer'),
-             'Zim': ('Irk', 'Invader'),
-             'Lrrr': ('Omicron Persei 8', 'Emperor')}
-
-            If a key from the keys argument is missing from the dictionary,
-            then that row was not found in the table.
-
-        Raises:
-            IOError: An error occurred accessing the bigtable.Table object.
+        Arms vehicle
+        Sets self.activate to True
         """
-    def __init__():
-        vehicle = connect("/dev/ttyACM0")
-        homeLat = vehicle.location.global_frame.lat
-        homeLon = vehicle.location.global_frame.lon
+        print "Basic pre-arm checks"
+        # Don't try to arm until autopilot is ready
+        while not self.vehicle.is_armable:
+            print " Waiting for vehicle to initialise..."
+            time.sleep(1)
 
-    aTargetAltitude = 3
-    def takeoff(altitude):
-    """Fetches rows from a Bigtable.
+        print "Arming motors"
+        # Copter should arm in GUIDED mode
+        self.vehicle.mode    = VehicleMode("GUIDED")
 
-        Retrieves rows pertaining to the given keys from the Table instance
-        represented by big_table.  Silly things may happen if
-        other_silly_variable is not None.
+        while not vehicle.mode == "GUIDED":
+            print "waiting for guided mode"
+            time.sleep(1)
+        self.vehicle.armed   = True
 
-        Args:
-            big_table: An open Bigtable Table instance.
-            keys: A sequence of strings representing the key of each table row
-                to fetch.
-            other_silly_variable: Another optional variable, that has a much
-                longer name than the other args, and which does nothing.
+        # Confirm vehicle armed before attempting to take off
+        while not vehicle.armed:
+            print " Waiting for arming..."
+            time.sleep(1)
+        self.activated = True
 
-        Returns:
-            A dict mapping keys to the corresponding table row data
-            fetched. Each row is represented as a tuple of strings. For
-            example:
+    def takeoff(self, altitude):
+        self.vehicle.simple_takeoff(altitude)
 
-            {'Serak': ('Rigel VII', 'Preparer'),
-             'Zim': ('Irk', 'Invader'),
-             'Lrrr': ('Omicron Persei 8', 'Emperor')}
+    def RTL(self, altitude=None):
+        if altitude:
+            self.vehicle.parameters['RTL_ALT'] = 0
+        self.vehicle.mode = VehicleMode("RTL")
 
-            If a key from the keys argument is missing from the dictionary,
-            then that row was not found in the table.
+    def goSwitch(self):
+        return vehicle.channels["6"] > 1500
 
-        Raises:
-            IOError: An error occurred accessing the bigtable.Table object.
-        """
-        
-        vehicle.simple_takeoff(altitude)
-
-    def RTL(altitude):
-    """Fetches rows from a Bigtable.
-
-        Retrieves rows pertaining to the given keys from the Table instance
-        represented by big_table.  Silly things may happen if
-        other_silly_variable is not None.
-
-        Args:
-            big_table: An open Bigtable Table instance.
-            keys: A sequence of strings representing the key of each table row
-                to fetch.
-            other_silly_variable: Another optional variable, that has a much
-                longer name than the other args, and which does nothing.
-
-        Returns:
-            A dict mapping keys to the corresponding table row data
-            fetched. Each row is represented as a tuple of strings. For
-            example:
-
-            {'Serak': ('Rigel VII', 'Preparer'),
-             'Zim': ('Irk', 'Invader'),
-             'Lrrr': ('Omicron Persei 8', 'Emperor')}
-
-            If a key from the keys argument is missing from the dictionary,
-            then that row was not found in the table.
-
-        Raises:
-            IOError: An error occurred accessing the bigtable.Table object.
-        """
-
-        vehicle.mode = VehicleMode("RTL")
-#vehicle = connect("tcp:127.0.0.1:5760")
-camera = picamera.PiCamera()
-
-time.sleep(15)
-
-#vehicle.mode = VehicleMode("GUIDED")
-
-while not vehicle.mode == "GUIDED":
-    print "waiting for guided mode"
-    time.sleep(1)
-
-while vehicle.channels["6"] < 1500:
-    print "waiting for GO switch"
-    time.sleep(1)
-
-vehicle.armed = True
-time.sleep(5)
-print vehicle.armed
+    def sendVelocity(self,vx, vy, vz):
+        '''Ref: http://python.dronekit.io/guide/copter/guided_mode.html
+         North, East, Down coordinate system
+         May need updating every three seconds to persist? 
+        '''
+        msg = self.vehicle.message_factory.set_position_target_local_ned_encode(
+            0,       # time_boot_ms (not used)
+            0, 0,    # target system, target component
+            mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
+            0b0000111111000111, # type_mask (only speeds enabled)
+            0, 0, 0, # x, y, z positions (not used)
+            vx, vy, vz, # x, y, z velocity in m/s
+            0, 0, 0, # x, y, z acceleration (not supported yet, ignored in GCS_Mavlink)
+            0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
 
 
 
-if vehicle.armed == True:
-    print "Taking off!"
-    vehicle.simple_takeoff(aTargetAltitude) # Take off to target altitude
 
-    # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command
-    #  after Vehicle.simple_takeoff will execute immediately).
-    for i in range(10):
-        print " Altitude: ", vehicle.location.global_relative_frame.alt
-        if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95: #Trigger just below target alt.
-            print "Reached target altitude"
-            time.sleep(3)
-            break
-        time.sleep(1)
 
-    for h in range(4,20,2):
-        pos = LocationGlobalRelative(homeLat, homeLon, float(h))
-        vehicle.simple_goto(pos)
-        time.sleep(2)
-        print " Altitude: ", vehicle.location.global_relative_frame.alt
-        for i in range(10):
-            camera.capture('img_' + str(h) + 'm_' + str(i) + '.jpg')
-            time.sleep(0.2)
-
-    vehicle.mode = VehicleMode("RTL")
-    print vehicle.mode
