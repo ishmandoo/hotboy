@@ -11,8 +11,8 @@ class Hotboy():
 
     def __init__(self,port="/dev/ttyACM0", camera=True, activate=False):
         self.vehicle = connect(port, wait_ready=True)
-        self.homeLat = vehicle.location.global_frame.lat
-        self.homeLon = vehicle.location.global_frame.lon
+        self.homeLat = self.vehicle.location.global_frame.lat
+        self.homeLon = self.vehicle.location.global_frame.lon
         self.activated = False
         if activate:
             self.activate()
@@ -97,7 +97,7 @@ class Hotboy():
         self.vehicle.mode = VehicleMode("RTL")
 
     def goSwitch(self):
-        return vehicle.channels["6"] > 1500
+        return self.vehicle.channels["6"] > 1500
 
     def sendVelocity(self, vx, vy, vz):
         '''Ref: http://python.dronekit.io/guide/copter/guided_mode.html
