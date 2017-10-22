@@ -99,7 +99,7 @@ class Hotboy():
     def goSwitch(self):
         return vehicle.channels["6"] > 1500
 
-    def sendVelocity(self,vx, vy, vz):
+    def sendVelocity(self, vx, vy, vz):
         '''Ref: http://python.dronekit.io/guide/copter/guided_mode.html
          North, East, Down coordinate system
          May need updating every three seconds to persist? 

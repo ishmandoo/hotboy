@@ -18,7 +18,6 @@ def findTarget(frame, show_img=False):
 
     """
 
-
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     x = np.arange(frame.shape[1])
